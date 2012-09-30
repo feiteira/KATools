@@ -1,4 +1,4 @@
 bin
-libs
+libs/*
 gen
 .metadata
