@@ -1,4 +1,4 @@
-bin
-libs/*
-gen
+bin/
+libs/
+gen/
 .metadata
