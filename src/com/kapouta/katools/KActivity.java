@@ -8,7 +8,6 @@ import android.os.Bundle;
 public class KActivity extends Activity {
 	public static final int GA_DISPATCH_PERIOD = 10;
 	public static final String PARENT_URL_KEY = "Parent URL!";
-	public static final String GA_UA_CODE = "TBD -01";
 	protected static GoogleAnalyticsTracker tracker = null;
 
 	private String analytics_url;
@@ -82,7 +81,8 @@ public class KActivity extends Activity {
 	}
 
 	public String getAnalyticsUACode() {
-		return GA_UA_CODE;
+		KApplication kapp =  (KApplication) this.getApplication();
+		return kapp.getAnalyticsUACode();
 		// return this.getString(R.string.ga_api_key);
 	}
 
