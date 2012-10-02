@@ -17,5 +17,6 @@ After the initial update, you will need to download and add the following librar
 
 	* Google Analytics Android lib: https://developers.google.com/analytics/devguides/collection/android/devguide
 	
+And place them in the KATools/libs folder. If the folder is not there, create it.
 
 	
