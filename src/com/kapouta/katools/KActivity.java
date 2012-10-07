@@ -3,19 +3,99 @@ package com.kapouta.katools;
 import com.google.android.apps.analytics.GoogleAnalyticsTracker;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 public class KActivity extends Activity {
 	public static final int GA_DISPATCH_PERIOD = 10;
+	private static final String KATOOLS_PREF_FILE_NAME = "ActivityPreferences.katools";
+	private static final String KEY_PREFIX_ON_CREATE = "on_create:";
+
 	public static final String PARENT_URL_KEY = "Parent URL!";
+
 	protected static GoogleAnalyticsTracker tracker = null;
 
 	private String analytics_url;
-	private String tracking_name;
 	private boolean doNotTrackThisTime;
+	private SharedPreferences preferences;
+	private String tracking_name;
+
+	private void addSelfAsParent(Intent intent) {
+		intent.putExtra(KActivity.PARENT_URL_KEY, getActivityAnalyticsURL());
+	}
+
+	private void countOnCreate() {
+		String key = KEY_PREFIX_ON_CREATE + getURL();
+		int count = preferences.getInt(key, MODE_PRIVATE);
+		count++;
+		SharedPreferences.Editor editor = preferences.edit();
+
+		editor.putInt(key, count);
+		editor.commit();
+
+	}
+
+	public void doAction(String action_key) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putBoolean(action_key, true);
+		editor.commit();
+	}
+
+	public String getActivityAnalyticsURL() {
+		if (this.analytics_url == null) {
+			Bundle extras = getIntent().getExtras();
+
+			if (extras != null && extras.getString(KActivity.PARENT_URL_KEY) != null) {
+
+				this.analytics_url = extras.getString(KActivity.PARENT_URL_KEY) + getTrackingName();
+			} else
+				this.analytics_url = getTrackingName();
+		}
+		return this.analytics_url;
+	}
+
+	public String getAnalyticsUACode() {
+		KApplication kapp = (KApplication) this.getApplication();
+		return kapp.getAnalyticsUACode();
+		// return this.getString(R.string.ga_api_key);
+	}
+
+	protected GoogleAnalyticsTracker getTracker() {
+		return tracker;
+	}
+
+	public String getTrackingName() {
+		if (this.tracking_name == null) {
+			this.tracking_name = "/" + this.getClass().getSimpleName();
+
+			this.tracking_name = this.tracking_name.replaceFirst("Activity", "");
+
+		}
+		return this.tracking_name;
+	}
+
+	public String getURL() {
+		return getActivityAnalyticsURL();
+	}
+
+	public boolean isFirstCreate() {
+		String key = KEY_PREFIX_ON_CREATE + getURL();
+		int count = preferences.getInt(key, MODE_PRIVATE);
+
+		return count == 1;
+	}
+
+	public int getCreationCount() {
+		String key = KEY_PREFIX_ON_CREATE + getURL();
+		return preferences.getInt(key, MODE_PRIVATE);
+	}
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		preferences = getSharedPreferences(KATOOLS_PREF_FILE_NAME, MODE_PRIVATE);
+
+		countOnCreate();
 
 		this.doNotTrackThisTime = false;
 		if (tracker == null) {
@@ -27,8 +107,8 @@ public class KActivity extends Activity {
 		}
 	}
 
-	protected GoogleAnalyticsTracker getTracker() {
-		return tracker;
+	public void onDestroy() {
+		super.onDestroy();
 	}
 
 	public void onResume() {
@@ -48,48 +128,6 @@ public class KActivity extends Activity {
 		this.doNotTrackThisTime = true;
 	}
 
-	public void onDestroy() {
-		// tracker.dispatch();
-		// tracker.stopSession();
-		super.onDestroy();
-	}
-
-	public String getActivityAnalyticsURL() {
-		if (this.analytics_url == null) {
-			Bundle extras = getIntent().getExtras();
-
-			if (extras != null
-					&& extras.getString(KActivity.PARENT_URL_KEY) != null) {
-
-				this.analytics_url = extras.getString(KActivity.PARENT_URL_KEY)
-						+ getTrackingName();
-			} else
-				this.analytics_url = getTrackingName();
-		}
-		return this.analytics_url;
-	}
-
-	public String getTrackingName() {
-		if (this.tracking_name == null) {
-			this.tracking_name = "/" + this.getClass().getSimpleName();
-
-			this.tracking_name = this.tracking_name
-					.replaceFirst("Activity", "");
-
-		}
-		return this.tracking_name;
-	}
-
-	public String getAnalyticsUACode() {
-		KApplication kapp =  (KApplication) this.getApplication();
-		return kapp.getAnalyticsUACode();
-		// return this.getString(R.string.ga_api_key);
-	}
-
-	private void addSelfAsParent(Intent intent) {
-		intent.putExtra(KActivity.PARENT_URL_KEY, getActivityAnalyticsURL());
-	}
-
 	@Override
 	public void startActivity(Intent intent) {
 		addSelfAsParent(intent);
@@ -103,8 +141,7 @@ public class KActivity extends Activity {
 	}
 
 	@Override
-	public void startActivityFromChild(Activity child, Intent intent,
-			int requestCode) {
+	public void startActivityFromChild(Activity child, Intent intent, int requestCode) {
 		addSelfAsParent(intent);
 		super.startActivityFromChild(child, intent, requestCode);
 	}
@@ -113,6 +150,10 @@ public class KActivity extends Activity {
 	public boolean startActivityIfNeeded(Intent intent, int requestCode) {
 		addSelfAsParent(intent);
 		return super.startActivityIfNeeded(intent, requestCode);
+	}
+
+	public boolean wasActionAlreadyDone(String action_key) {
+		return preferences.getBoolean(action_key, false);
 	}
 
 }
