@@ -90,6 +90,7 @@ public class KActivity extends Activity {
 		return preferences.getInt(key, MODE_PRIVATE);
 	}
 
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -107,10 +108,12 @@ public class KActivity extends Activity {
 		}
 	}
 
+	@Override
 	public void onDestroy() {
 		super.onDestroy();
 	}
 
+	@Override
 	public void onResume() {
 		super.onResume();
 		if (this.doNotTrackThisTime) {

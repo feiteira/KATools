@@ -8,6 +8,7 @@ public abstract class KApplication extends Application {
 
 	public abstract String getAnalyticsUACode();
 	
+	@Override
 	public void onCreate() {
 		super.onCreate();
 		self = this;
