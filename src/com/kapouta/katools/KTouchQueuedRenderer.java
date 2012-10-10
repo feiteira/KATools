@@ -12,47 +12,46 @@ import android.view.View.OnTouchListener;
 
 public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener {
 
-	Vector<MotionEvent> events = null;
-
-	public abstract void onDrawFrame(GL10 gl, MotionEvent event);
+	Vector<MotionEventData> events = null;
+	private boolean two_pointers_down;
 
 	public KTouchQueuedRenderer() {
-		events = new Vector<MotionEvent>();
+		events = new Vector<MotionEventData>();
+		this.two_pointers_down = false;
+
 	}
 
 	@Override
-	public void onDrawFrame(GL10 gl) {
+	public synchronized void onDrawFrame(GL10 gl) {
 		if (events.size() > 0) {
-			MotionEvent curr_event = events.remove(0);
+			MotionEventData curr_event = events.remove(0);
 
-			switch (curr_event.getAction()) {
+			switch (curr_event.action) {
 			case MotionEvent.ACTION_DOWN:
-				this.onTouchDown(curr_event.getX(), curr_event.getY());
+				this.onTouchDown(curr_event.x1, curr_event.y1);
 				break;
 			case MotionEvent.ACTION_MOVE:
-				this.onTouchMove(curr_event.getX(), curr_event.getY());
+				this.onTouchMove(curr_event.x1, curr_event.y1);
 				break;
 			case MotionEvent.ACTION_UP:
-				this.onTouchUp(curr_event.getX(), curr_event.getY());
+				this.onTouchUp(curr_event.x1, curr_event.y1);
 				break;
 			case MotionEvent.ACTION_POINTER_2_DOWN: {
-				int pid0 = curr_event.getPointerId(0);
-				int pid1 = curr_event.getPointerId(1);
-				this.onTouchUp(curr_event.getX(pid0), curr_event.getY(pid0));
-				this.onDualTouchDown(curr_event.getX(pid0), curr_event.getY(pid0), curr_event.getX(pid1), curr_event.getY(pid1));
+				this.two_pointers_down = true;
+				this.onTouchUp(curr_event.x1, curr_event.y1);
+				this.onDualTouchDown(curr_event.x1, curr_event.y1, curr_event.x2, curr_event.y2);
 				break;
 			}
+			case MotionEvent.ACTION_POINTER_1_UP:
 			case MotionEvent.ACTION_POINTER_2_UP: {
-				int pid0 = curr_event.getPointerId(0);
-				int pid1 = curr_event.getPointerId(1);
-				this.onDualTouchUp(curr_event.getX(pid0), curr_event.getY(pid0), curr_event.getX(pid1), curr_event.getY(pid1));
+				this.two_pointers_down = false;
+				this.onDualTouchUp(curr_event.x1, curr_event.y1, curr_event.x2, curr_event.y2);
 				break;
 			}
 			default:
 				System.out.println("Unknown: " + curr_event);
 			}
 		}
-		this.onDrawFrame(gl);
 	}
 
 	@Override
@@ -96,8 +95,30 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 
 	@Override
 	public boolean onTouch(View view, MotionEvent event) {
-		events.add(event);
+		if (MotionEvent.ACTION_MOVE != event.getAction() || events.size() == 0)
+			events.add(new MotionEventData(event));
+		System.out.println(":: " + event);
 		return true;
+	}
+
+	protected class MotionEventData {
+		float x1, y1, x2, y2;
+		int action;
+
+		public MotionEventData(MotionEvent event) {
+			int pid0 = event.getPointerId(0);
+			int pid1 = event.getPointerId(1);
+			x1 = event.getX(pid0);
+			y1 = event.getY(pid0);
+			x2 = event.getX(pid1);
+			y2 = event.getY(pid1);
+			action = event.getAction();
+		}
+
+		public String toString() {
+			return "A[" + action + "]  P1( " + x1 + " , " + y1 + " )  P2 " + x2 + " , " + y2 + " )";
+		}
+
 	}
 
 }
