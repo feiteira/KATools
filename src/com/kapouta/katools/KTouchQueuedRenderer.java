@@ -33,6 +33,7 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 			case MotionEvent.ACTION_DOWN:
 				this.onTouchDown(curr_event.x1, curr_event.y1);
 				break;
+
 			case MotionEvent.ACTION_MOVE:
 				// only one finger
 				if (curr_event.count == 1)
@@ -42,33 +43,34 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 					this.onDualTouchMove(curr_event.x1, curr_event.y1,
 							curr_event.x2, curr_event.y2);
 				break;
+
 			case MotionEvent.ACTION_UP:
 				this.onTouchUp(curr_event.x1, curr_event.y1);
 				break;
-			case MotionEvent.ACTION_POINTER_1_DOWN: {
+
+			case MotionEvent.ACTION_POINTER_1_DOWN:
 				this.onTouchUp(curr_event.x2, curr_event.y2);
 				this.onDualTouchDown(curr_event.x1, curr_event.y1,
 						curr_event.x2, curr_event.y2);
 				break;
-			}
-			case MotionEvent.ACTION_POINTER_2_DOWN: {
+
+			case MotionEvent.ACTION_POINTER_2_DOWN:
 				this.onTouchUp(curr_event.x1, curr_event.y1);
 				this.onDualTouchDown(curr_event.x1, curr_event.y1,
 						curr_event.x2, curr_event.y2);
 				break;
-			}
-			case MotionEvent.ACTION_POINTER_1_UP: {
+
+			case MotionEvent.ACTION_POINTER_1_UP:
 				this.onDualTouchUp(curr_event.x1, curr_event.y1, curr_event.x2,
 						curr_event.y2);
 				this.onTouchDown(curr_event.x2, curr_event.y2);
 				break;
-			}
-			case MotionEvent.ACTION_POINTER_2_UP: {
+
+			case MotionEvent.ACTION_POINTER_2_UP:
 				this.onDualTouchUp(curr_event.x1, curr_event.y1, curr_event.x2,
 						curr_event.y2);
 				this.onTouchDown(curr_event.x1, curr_event.y1);
 				break;
-			}
 
 			default:
 				System.out.println("Unknown: " + curr_event);
@@ -97,26 +99,23 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 
 	public void onTouchUp(float x, float y) {
 		System.out.println("One UP ( " + x + " , " + y + " )");
-
 	}
 
 	public void onDualTouchDown(float x1, float y1, float x2, float y2) {
-		// System.out.println("Two DOWN ( " + x1 + " , " + y1 + " ; " + x2 +
-		// " , "
-		// + y2 + " ) ");
+		System.out.println("Two DOWN ( " + x1 + " , " + y1 + " ; " + x2 + " , "
+				+ y2 + " ) ");
 
 	}
 
 	public void onDualTouchMove(float x1, float y1, float x2, float y2) {
-		// System.out.println("Two MOVE ( " + x1 + " , " + y1 + " ; " + x2 +
-		// " , "
-		// + y2 + " ) ");
+		System.out.println("Two MOVE ( " + x1 + " , " + y1 + " ; " + x2 + " , "
+				+ y2 + " ) ");
 
 	}
 
 	public void onDualTouchUp(float x1, float y1, float x2, float y2) {
-		// System.out.println("Two UP ( " + x1 + " , " + y1 + " ; " + x2 + " , "
-		// + y2 + " ) ");
+		System.out.println("Two UP ( " + x1 + " , " + y1 + " ; " + x2 + " , "
+				+ y2 + " ) ");
 
 	}
 
