@@ -12,12 +12,13 @@ import android.view.View.OnTouchListener;
 
 public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener {
 
+	public static final int MODE_TWO_POINTERS_DOWN = 0;
+	public static final int MODE_WAIT_POINTER_DOWN = 1;
 	Vector<MotionEventData> events = null;
-	private boolean two_pointers_down;
+	private int mode;
 
 	public KTouchQueuedRenderer() {
 		events = new Vector<MotionEventData>();
-		this.two_pointers_down = false;
 
 	}
 
@@ -26,28 +27,49 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 		if (events.size() > 0) {
 			MotionEventData curr_event = events.remove(0);
 
+			// System.out.println(curr_event);
+
 			switch (curr_event.action) {
 			case MotionEvent.ACTION_DOWN:
 				this.onTouchDown(curr_event.x1, curr_event.y1);
 				break;
 			case MotionEvent.ACTION_MOVE:
-				this.onTouchMove(curr_event.x1, curr_event.y1);
+				// only one finger
+				if (curr_event.count == 1)
+					this.onTouchMove(curr_event.x1, curr_event.y1);
+				else
+					// two or more (only ready for two)
+					this.onDualTouchMove(curr_event.x1, curr_event.y1,
+							curr_event.x2, curr_event.y2);
 				break;
 			case MotionEvent.ACTION_UP:
 				this.onTouchUp(curr_event.x1, curr_event.y1);
 				break;
+			case MotionEvent.ACTION_POINTER_1_DOWN: {
+				this.onTouchUp(curr_event.x2, curr_event.y2);
+				this.onDualTouchDown(curr_event.x1, curr_event.y1,
+						curr_event.x2, curr_event.y2);
+				break;
+			}
 			case MotionEvent.ACTION_POINTER_2_DOWN: {
-				this.two_pointers_down = true;
 				this.onTouchUp(curr_event.x1, curr_event.y1);
-				this.onDualTouchDown(curr_event.x1, curr_event.y1, curr_event.x2, curr_event.y2);
+				this.onDualTouchDown(curr_event.x1, curr_event.y1,
+						curr_event.x2, curr_event.y2);
 				break;
 			}
-			case MotionEvent.ACTION_POINTER_1_UP:
+			case MotionEvent.ACTION_POINTER_1_UP: {
+				this.onDualTouchUp(curr_event.x1, curr_event.y1, curr_event.x2,
+						curr_event.y2);
+				this.onTouchDown(curr_event.x2, curr_event.y2);
+				break;
+			}
 			case MotionEvent.ACTION_POINTER_2_UP: {
-				this.two_pointers_down = false;
-				this.onDualTouchUp(curr_event.x1, curr_event.y1, curr_event.x2, curr_event.y2);
+				this.onDualTouchUp(curr_event.x1, curr_event.y1, curr_event.x2,
+						curr_event.y2);
+				this.onTouchDown(curr_event.x1, curr_event.y1);
 				break;
 			}
+
 			default:
 				System.out.println("Unknown: " + curr_event);
 			}
@@ -79,44 +101,55 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 	}
 
 	public void onDualTouchDown(float x1, float y1, float x2, float y2) {
-		System.out.println("Two DOWN ( " + x1 + " , " + y1 + " ; " + x2 + " , " + y2 + " ) ");
+		// System.out.println("Two DOWN ( " + x1 + " , " + y1 + " ; " + x2 +
+		// " , "
+		// + y2 + " ) ");
 
 	}
 
 	public void onDualTouchMove(float x1, float y1, float x2, float y2) {
-		System.out.println("Two MOVE ( " + x1 + " , " + y1 + " ; " + x2 + " , " + y2 + " ) ");
+		// System.out.println("Two MOVE ( " + x1 + " , " + y1 + " ; " + x2 +
+		// " , "
+		// + y2 + " ) ");
 
 	}
 
 	public void onDualTouchUp(float x1, float y1, float x2, float y2) {
-		System.out.println("Two UP ( " + x1 + " , " + y1 + " ; " + x2 + " , " + y2 + " ) ");
+		// System.out.println("Two UP ( " + x1 + " , " + y1 + " ; " + x2 + " , "
+		// + y2 + " ) ");
 
 	}
 
 	@Override
 	public boolean onTouch(View view, MotionEvent event) {
+		// by discarding MVOE events, this condition ensures that the event
+		// queue does not grow crazy when the user is moving around a lot.
 		if (MotionEvent.ACTION_MOVE != event.getAction() || events.size() == 0)
 			events.add(new MotionEventData(event));
-		System.out.println(":: " + event);
 		return true;
 	}
 
 	protected class MotionEventData {
 		float x1, y1, x2, y2;
 		int action;
+		int count;
 
 		public MotionEventData(MotionEvent event) {
 			int pid0 = event.getPointerId(0);
 			int pid1 = event.getPointerId(1);
 			x1 = event.getX(pid0);
 			y1 = event.getY(pid0);
-			x2 = event.getX(pid1);
-			y2 = event.getY(pid1);
+			if (event.getPointerCount() > 0) {
+				x2 = event.getX(pid1);
+				y2 = event.getY(pid1);
+			}
+			count = event.getPointerCount();
 			action = event.getAction();
 		}
 
 		public String toString() {
-			return "A[" + action + "]  P1( " + x1 + " , " + y1 + " )  P2 " + x2 + " , " + y2 + " )";
+			return "A[" + action + "]  P1( " + x1 + " , " + y1 + " )  P2 " + x2
+					+ " , " + y2 + " )";
 		}
 
 	}
