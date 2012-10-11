@@ -31,45 +31,45 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 
 			switch (curr_event.action) {
 			case MotionEvent.ACTION_DOWN:
-				this.onTouchDown(curr_event.x1, curr_event.y1);
+				this.onTouchDown(gl, curr_event.x1, curr_event.y1);
 				break;
 
 			case MotionEvent.ACTION_MOVE:
 				// only one finger
 				if (curr_event.count == 1)
-					this.onTouchMove(curr_event.x1, curr_event.y1);
+					this.onTouchMove(gl, curr_event.x1, curr_event.y1);
 				else
 					// two or more (only ready for two)
-					this.onDualTouchMove(curr_event.x1, curr_event.y1,
+					this.onDualTouchMove(gl, curr_event.x1, curr_event.y1,
 							curr_event.x2, curr_event.y2);
 				break;
 
 			case MotionEvent.ACTION_UP:
-				this.onTouchUp(curr_event.x1, curr_event.y1);
+				this.onTouchUp(gl, curr_event.x1, curr_event.y1);
 				break;
 
 			case MotionEvent.ACTION_POINTER_1_DOWN:
-				this.onTouchUp(curr_event.x2, curr_event.y2);
-				this.onDualTouchDown(curr_event.x1, curr_event.y1,
+				this.onTouchUp(gl, curr_event.x2, curr_event.y2);
+				this.onDualTouchDown(gl, curr_event.x1, curr_event.y1,
 						curr_event.x2, curr_event.y2);
 				break;
 
 			case MotionEvent.ACTION_POINTER_2_DOWN:
-				this.onTouchUp(curr_event.x1, curr_event.y1);
-				this.onDualTouchDown(curr_event.x1, curr_event.y1,
+				this.onTouchUp(gl, curr_event.x1, curr_event.y1);
+				this.onDualTouchDown(gl, curr_event.x1, curr_event.y1,
 						curr_event.x2, curr_event.y2);
 				break;
 
 			case MotionEvent.ACTION_POINTER_1_UP:
-				this.onDualTouchUp(curr_event.x1, curr_event.y1, curr_event.x2,
-						curr_event.y2);
-				this.onTouchDown(curr_event.x2, curr_event.y2);
+				this.onDualTouchUp(gl, curr_event.x1, curr_event.y1,
+						curr_event.x2, curr_event.y2);
+				this.onTouchDown(gl, curr_event.x2, curr_event.y2);
 				break;
 
 			case MotionEvent.ACTION_POINTER_2_UP:
-				this.onDualTouchUp(curr_event.x1, curr_event.y1, curr_event.x2,
-						curr_event.y2);
-				this.onTouchDown(curr_event.x1, curr_event.y1);
+				this.onDualTouchUp(gl, curr_event.x1, curr_event.y1,
+						curr_event.x2, curr_event.y2);
+				this.onTouchDown(gl, curr_event.x1, curr_event.y1);
 				break;
 
 			default:
@@ -88,35 +88,32 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 
 	}
 
-	public void onTouchDown(float x, float y) {
+	public void onTouchDown(GL10 gl, float x, float y) {
 		System.out.println("One DOWN ( " + x + " , " + y + " )");
 	}
 
-	public void onTouchMove(float x, float y) {
+	public void onTouchMove(GL10 gl, float x, float y) {
 		System.out.println("One MOVE ( " + x + " , " + y + " )");
 
 	}
 
-	public void onTouchUp(float x, float y) {
+	public void onTouchUp(GL10 gl, float x, float y) {
 		System.out.println("One UP ( " + x + " , " + y + " )");
 	}
 
-	public void onDualTouchDown(float x1, float y1, float x2, float y2) {
+	public void onDualTouchDown(GL10 gl, float x1, float y1, float x2, float y2) {
 		System.out.println("Two DOWN ( " + x1 + " , " + y1 + " ; " + x2 + " , "
 				+ y2 + " ) ");
-
 	}
 
-	public void onDualTouchMove(float x1, float y1, float x2, float y2) {
+	public void onDualTouchMove(GL10 gl, float x1, float y1, float x2, float y2) {
 		System.out.println("Two MOVE ( " + x1 + " , " + y1 + " ; " + x2 + " , "
 				+ y2 + " ) ");
-
 	}
 
-	public void onDualTouchUp(float x1, float y1, float x2, float y2) {
+	public void onDualTouchUp(GL10 gl, float x1, float y1, float x2, float y2) {
 		System.out.println("Two UP ( " + x1 + " , " + y1 + " ; " + x2 + " , "
 				+ y2 + " ) ");
-
 	}
 
 	@Override
