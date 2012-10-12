@@ -120,10 +120,11 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 
 		public MotionEventData(MotionEvent event) {
 			int pid0 = event.getPointerId(0);
-			int pid1 = event.getPointerId(1);
+			int pid1;
 			x1 = event.getX(pid0);
 			y1 = event.getY(pid0);
-			if (event.getPointerCount() > 0) {
+			if (event.getPointerCount() > 1) {
+				pid1  = event.getPointerId(1);
 				x2 = event.getX(pid1);
 				y2 = event.getY(pid1);
 			}
