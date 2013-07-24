@@ -18,89 +18,81 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 	}
 
 	@Override
-	public synchronized void onDrawFrame(GL10 gl) {
-		if (events.size() > 0) {
-			MotionEventData curr_event = events.remove(0);
+	public void onDrawFrame(GL10 gl) {
+		synchronized (events) {
+			if (events.size() > 0) {
+				MotionEventData curr_event = events.remove(0);
 
-			// System.out.println(curr_event);
+				// System.out.println(curr_event);
 
-			switch (curr_event.action) {
-			case MotionEvent.ACTION_DOWN:
-				this.onTouchDown(gl, curr_event.x1, curr_event.y1);
-				break;
+				switch (curr_event.action) {
+				case MotionEvent.ACTION_DOWN:
+					this.onTouchDown(gl, curr_event.x1, curr_event.y1);
+					break;
 
-			case MotionEvent.ACTION_MOVE:
-				// only one finger
-				if (curr_event.count == 1)
-					this.onTouchMove(gl, curr_event.x1, curr_event.y1);
-				else
-					// two or more (only ready for two)
-					this.onDualTouchMove(gl, curr_event.x1, curr_event.y1, curr_event.x2, curr_event.y2);
-				break;
+				case MotionEvent.ACTION_MOVE:
+					// only one finger
+					if (curr_event.count == 1)
+						this.onTouchMove(gl, curr_event.x1, curr_event.y1);
+					else
+						// two or more (only ready for two)
+						this.onDualTouchMove(gl, curr_event.x1, curr_event.y1,
+								curr_event.x2, curr_event.y2);
+					break;
 
-			case MotionEvent.ACTION_UP:
-				this.onTouchUp(gl, curr_event.x1, curr_event.y1);
-				break;
+				case MotionEvent.ACTION_UP:
+					this.onTouchUp(gl, curr_event.x1, curr_event.y1);
+					break;
 
-			case MotionEvent.ACTION_POINTER_1_DOWN:
-				this.onTouchUp(gl, curr_event.x2, curr_event.y2);
-				this.onDualTouchDown(gl, curr_event.x1, curr_event.y1, curr_event.x2, curr_event.y2);
-				break;
+				case MotionEvent.ACTION_POINTER_1_DOWN:
+					this.onTouchUp(gl, curr_event.x2, curr_event.y2);
+					this.onDualTouchDown(gl, curr_event.x1, curr_event.y1,
+							curr_event.x2, curr_event.y2);
+					break;
 
-			case MotionEvent.ACTION_POINTER_2_DOWN:
-				this.onTouchUp(gl, curr_event.x1, curr_event.y1);
-				this.onDualTouchDown(gl, curr_event.x1, curr_event.y1, curr_event.x2, curr_event.y2);
-				break;
+				case MotionEvent.ACTION_POINTER_2_DOWN:
+					this.onTouchUp(gl, curr_event.x1, curr_event.y1);
+					this.onDualTouchDown(gl, curr_event.x1, curr_event.y1,
+							curr_event.x2, curr_event.y2);
+					break;
 
-			case MotionEvent.ACTION_POINTER_1_UP:
-				this.onDualTouchUp(gl, curr_event.x1, curr_event.y1, curr_event.x2, curr_event.y2);
-				this.onTouchDown(gl, curr_event.x2, curr_event.y2);
-				break;
+				case MotionEvent.ACTION_POINTER_1_UP:
+					this.onDualTouchUp(gl, curr_event.x1, curr_event.y1,
+							curr_event.x2, curr_event.y2);
+					this.onTouchDown(gl, curr_event.x2, curr_event.y2);
+					break;
 
-			case MotionEvent.ACTION_POINTER_2_UP:
-				this.onDualTouchUp(gl, curr_event.x1, curr_event.y1, curr_event.x2, curr_event.y2);
-				this.onTouchDown(gl, curr_event.x1, curr_event.y1);
-				break;
+				case MotionEvent.ACTION_POINTER_2_UP:
+					this.onDualTouchUp(gl, curr_event.x1, curr_event.y1,
+							curr_event.x2, curr_event.y2);
+					this.onTouchDown(gl, curr_event.x1, curr_event.y1);
+					break;
 
-			default:
-				System.out.println("Unknown: " + curr_event);
+				default:
+					System.out.println("Unknown: " + curr_event);
+				}
 			}
 		}
 	}
 
-	@Override
-	public void onSurfaceChanged(GL10 arg0, int arg1, int arg2) {
+	abstract public void onSurfaceChanged(GL10 arg0, int arg1, int arg2);
 
-	}
+	abstract public void onSurfaceCreated(GL10 arg0, EGLConfig arg1);
 
-	@Override
-	public void onSurfaceCreated(GL10 arg0, EGLConfig arg1) {
+	abstract public void onTouchDown(GL10 gl, float x, float y);
 
-	}
+	abstract public void onTouchMove(GL10 gl, float x, float y);
 
-	public void onTouchDown(GL10 gl, float x, float y) {
-		// System.out.println("One DOWN ( " + x + " , " + y + " )");
-	}
+	abstract public void onTouchUp(GL10 gl, float x, float y);
 
-	public void onTouchMove(GL10 gl, float x, float y) {
-		// System.out.println("One MOVE ( " + x + " , " + y + " )");
-	}
+	abstract public void onDualTouchDown(GL10 gl, float x1, float y1, float x2,
+			float y2);
 
-	public void onTouchUp(GL10 gl, float x, float y) {
-		// System.out.println("One UP ( " + x + " , " + y + " )");
-	}
+	abstract public void onDualTouchMove(GL10 gl, float x1, float y1, float x2,
+			float y2);
 
-	public void onDualTouchDown(GL10 gl, float x1, float y1, float x2, float y2) {
-		// System.out.println("Two DOWN ( " + x1 + " , " + y1 + " ; " + x2 + " , " + y2 + " ) ");
-	}
-
-	public void onDualTouchMove(GL10 gl, float x1, float y1, float x2, float y2) {
-		// System.out.println("Two MOVE ( " + x1 + " , " + y1 + " ; " + x2 + " , " + y2 + " ) ");
-	}
-
-	public void onDualTouchUp(GL10 gl, float x1, float y1, float x2, float y2) {
-		// System.out.println("Two UP ( " + x1 + " , " + y1 + " ; " + x2 + " , " + y2 + " ) ");
-	}
+	abstract public void onDualTouchUp(GL10 gl, float x1, float y1, float x2,
+			float y2);
 
 	@Override
 	public boolean onTouch(View view, MotionEvent event) {
@@ -119,13 +111,13 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 		int count;
 
 		public MotionEventData(MotionEvent event) {
-			System.out.println("Event: " + event);
-			//int pid0 = event.getPointerId(0);
-			//int pid1;
+			System.out.println("!Event: " + event);
+			// int pid0 = event.getPointerId(0);
+			// int pid1;
 			x1 = event.getX(0);
 			y1 = event.getY(0);
 			if (event.getPointerCount() > 1) {
-//				pid1  = event.getPointerId(1);
+				// pid1 = event.getPointerId(1);
 				x2 = event.getX(1);
 				y2 = event.getY(1);
 			}
@@ -134,7 +126,8 @@ public abstract class KTouchQueuedRenderer implements Renderer, OnTouchListener 
 		}
 
 		public String toString() {
-			return "A[" + action + "]  P1( " + x1 + " , " + y1 + " )  P2 " + x2 + " , " + y2 + " )";
+			return "A[" + action + "]  P1( " + x1 + " , " + y1 + " )  P2 " + x2
+					+ " , " + y2 + " )";
 		}
 
 	}
