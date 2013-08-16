@@ -361,8 +361,13 @@ public class GLText {
 	}
 
 	public void drawCY(String text, float x, float y, float z) {
-		draw(text, x, y - (getCharHeight() / 2.0f), z); // Draw Text Centered
-														// (Y-Axis Only)
+		draw(text, x, y - (getCharHeight() / 2.0f), z); // Draw Text Centered														// (Y-Axis Only)
+	}
+
+	public void drawMXY(String text, float x, float y, float z) {
+		float len = getLength(text); // Get Text Length
+
+		draw(text, x-len, y - getCharHeight(), z); // Draw Text Centered														// (Y-Axis Only)
 	}
 
 	// --Set Scale--//
