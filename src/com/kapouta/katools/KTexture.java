@@ -29,7 +29,7 @@ public class KTexture {
 	public FloatBuffer texture; // buffer holding the texture
 								// coordinates
 
-	public static KTexture createTexture(String filepath, float z){
+	public static KTexture createTexture(String filepath, float z) {
 		return new KTexture(filepath, z);
 	}
 
@@ -52,7 +52,7 @@ public class KTexture {
 				glx2, gly2, z // V4 - top right
 		};
 
-		tex.makeBuffer();
+		tex.updateBuffer();
 
 		return tex;
 	}
@@ -71,9 +71,8 @@ public class KTexture {
 		this.texture.put(DEFAULT_TEX_COORDINATES);
 		this.texture.position(0);
 
-		this.vertexes = DEFAULT_SQUARE_TEX_VERTEXES;
+		this.vertexes = DEFAULT_SQUARE_TEX_VERTEXES.clone();
 		this.setDepth(z);
-		this.makeBuffer();
 
 	}
 
@@ -81,19 +80,20 @@ public class KTexture {
 		for (int zvertex = 2; zvertex < vertexes.length; zvertex += 3) {
 			vertexes[zvertex] = z;
 		}
+		this.updateBuffer();
 	}
 
-	public void makeBuffer() {
+	private void updateBuffer() {
 		ByteBuffer vbb2 = ByteBuffer.allocateDirect(
 		// (# of coordinate values * 4 bytes per float)
-				DEFAULT_SQUARE_TEX_VERTEXES.length * 4);
+				vertexes.length * 4);
 		vbb2.order(ByteOrder.nativeOrder());// use the device hardware's
 											// native
 											// byte order
 		buffer = vbb2.asFloatBuffer(); // create a floating point buffer
 										// from
 										// the ByteBuffer
-		buffer.put(DEFAULT_SQUARE_TEX_VERTEXES); // add the coordinates to the
+		buffer.put(vertexes); // add the coordinates to the
 		// FloatBuffer
 
 		buffer.position(0); // set the buffer to read the first
@@ -118,6 +118,8 @@ public class KTexture {
 
 		// Draw the vertices as triangle strip
 		gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, vertexes.length / 3);
+		// System.out.println("x1, y1, z1 = " + vertexes[0] + " , "+ vertexes[1]
+		// + " , "+ vertexes[2] );
 
 		// Disable the client state before leaving
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
